@@ -1,0 +1,45 @@
+---
+title: "cryptid_maps"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(tidyverse)
+library(leaflet)
+library(RColorBrewer)
+```
+
+Test map (bigfoot subset)
+```{r}
+bigfoot_subset_popup <-paste("weather:", bigfoot_subset$season,
+                      "</br>", "date:", bigfoot_subset$date,
+                      "</br>", "summary:", bigfoot_subset$title)
+
+leaflet() %>%
+  addTiles() %>%
+  addCircleMarkers(lng = ~longitude, lat = ~latitude, 
+                   data = bigfoot_subset, radius = 5, 
+                   stroke = FALSE, fillOpacity = 0.5, 
+                   popup = bigfoot_subset_popup
+                   )
+```
+
+test map (bigfoot full?)
+```{r}
+bigfoot_popup <-paste("weather:", bigfoot$season,
+                      "</br>", "date:", bigfoot$date,
+                      "</br>", "summary:", bigfoot$title)
+
+leaflet() %>%
+  addTiles() %>%
+  addCircleMarkers(lng = ~longitude, lat = ~latitude, 
+                   data = bigfoot, radius = 5, 
+                   stroke = FALSE, fillOpacity = 0.5, 
+                   popup = bigfoot_popup
+                   )
+```
+
