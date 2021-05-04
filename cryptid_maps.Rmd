@@ -42,4 +42,17 @@ leaflet() %>%
                    popup = bigfoot_popup
                    )
 ```
+test map (ufo 1 full?)
+```{r}
+ufo_popup <-paste("shape:", ufo$shape,
+                      "</br>", "date:", ufo$date_time)
+
+leaflet() %>%
+  addTiles() %>%
+  addCircleMarkers(lng = ~city_longitude, lat = ~city_latitude, 
+                   data = ufo, radius = 5, 
+                   stroke = FALSE, fillOpacity = 0.5, 
+                   popup = ufo_popup
+                   )
+```
 
