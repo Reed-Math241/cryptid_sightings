@@ -11,6 +11,7 @@ knitr::opts_chunk$set(echo = TRUE)
 library(tidyverse)
 library(leaflet)
 library(RColorBrewer)
+library(shiny)
 ```
 
 Test map (bigfoot subset)
@@ -30,7 +31,7 @@ leaflet() %>%
 
 test map (bigfoot full?)
 ```{r}
-bigfoot_popup <-paste("weather:", bigfoot$season,
+bigfoot_popup <-paste("season:", bigfoot$season,
                       "</br>", "date:", bigfoot$date,
                       "</br>", "summary:", bigfoot$title)
 
@@ -54,5 +55,76 @@ leaflet() %>%
                    stroke = FALSE, fillOpacity = 0.5, 
                    popup = ufo_popup
                    )
+```
+
+test map(dogman full?)
+```{r}
+dogman_popup <-paste("date:", dogman$date,
+                      "</br>", "desc:", dogman$description)
+
+leaflet() %>%
+  addTiles() %>%
+  addCircleMarkers(lng = ~longitude, lat = ~latitude, 
+                   data = dogman, radius = 5, 
+                   stroke = FALSE, fillOpacity = 0.5, 
+                   popup = dogman_popup
+                   )
+```
+
+```{r}
+# bigfoot_sep <- bigfoot %>%
+#   separate(date, sep = "-", into = c("year", "month", "day")) %>%
+#   mutate(year = as.numeric(year), na.rm = TRUE)
+
+bigfoot_sep <- bigfoot %>%
+  mutate(date = as.Date(date))
+  
+```
+
+shiny test
+```{r}
+ui <- fluidPage(
+  
+  p(),
+  sidebarLayout(
+    sidebarPanel(checkboxGroupInput(inputId = "season",
+                                choices = unique(bigfoot_sep$season),
+                                selected = unique(bigfoot_sep$season),
+                                label = "select season"), 
+                 dateRangeInput(inputId = "date", 
+                                start = "1900-01-01",
+                                end = "2022-01-01",
+                             min = "1900-01-01", 
+                             max = "2022-01-01", 
+                             label = "select date range")),
+  mainPanel(leafletOutput("mymap"))))
+
+server <- function(input, output, session) {
+
+  points <- reactive({
+    bigfoot_sep %>%
+    filter(season %in% input$season, na.rm = TRUE) %>%
+    filter(date <= input$date[2], date >= input$date[1])
+  
+})
+  
+
+  
+
+    output$mymap <- renderLeaflet({
+          content <- 
+    paste("season:", points()$season,
+                      "</br>", "date:", points()$date,
+                      "</br>", "summary:", points()$title)
+
+    leaflet() %>%
+      addTiles() %>%
+      addCircleMarkers(radius = 5, 
+                   stroke = FALSE, fillOpacity = 0.5, 
+                   data = points(), popup = content)
+  })
+}
+
+shinyApp(ui, server)
 ```
 
