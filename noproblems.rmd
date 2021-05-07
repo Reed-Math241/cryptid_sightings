@@ -1,0 +1,62 @@
+---
+title: "fish"
+author: "Grisha Post"
+date: "5/7/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+pacman::p_load(tidyverse, leaflet, RColorBrewer, ggthemes, spatstat, raster)
+```
+
+```{r}
+bigfoot <- read.csv("bfro_reports_geocoded.csv")
+bigfoot_subset <- bigfoot %>% 
+  slice_sample(n = 200)
+```
+
+```{r}
+#Filter out Alaska and error water points. 
+bigfoottrim2 <- bigfoot %>%
+  filter(state != "Alaska") %>%
+  filter(number != "38287") %>%
+  filter(number != "36759") %>%
+  filter(number != "17240") 
+  
+#Trim more
+bigfoottrim3 <- bigfoottrim2 %>%
+  dplyr::select(latitude, longitude) %>%
+  rename(lat = latitude, long = longitude) %>%
+  relocate(long, lat) %>%
+  drop_na()
+
+```
+
+```{r}
+visual <- ggplot(data = bigfoottrim3,
+mapping = aes(x = long, y = lat)) +
+geom_point() +
+ggtitle('Thicc Foot') +
+theme_wsj()
+
+visual
+```
+
+```{r}
+mypattern <- ppp(bigfoottrim3[,1], bigfoottrim3[,2], c(-135, -68.01197), c(19.50139, 55))
+k <- Kest(mypattern)
+plot(k)
+```
+
+```{r}
+r <- raster(ncol = 20, nrow = 20,
+            xmn = -135, xmx = -68.01197,
+            ymn = 19.50139, ymx = 55)
+
+raster <- rasterize(bigfoottrim3, r, fun = "count")
+plot(raster)
+```
