@@ -8,9 +8,15 @@ knitr::opts_chunk$set(echo = TRUE)
 ```
 
 ```{r}
-library(tidyverse)
-library(leaflet)
-library(RColorBrewer)
+pacman::p_load(tidyverse, leaflet, RColorBrewer, ggthemes, spatstat)
+
+```
+
+
+```{r}
+bigfoot <- read.csv("bfro_reports_geocoded.csv")
+bigfoot_subset <- bigfoot %>% 
+  slice_sample(n = 200)
 ```
 
 Test map (bigfoot subset)
@@ -42,17 +48,41 @@ leaflet() %>%
                    popup = bigfoot_popup
                    )
 ```
-test map (ufo 1 full?)
-```{r}
-ufo_popup <-paste("shape:", ufo$shape,
-                      "</br>", "date:", ufo$date_time)
 
-leaflet() %>%
-  addTiles() %>%
-  addCircleMarkers(lng = ~city_longitude, lat = ~city_latitude, 
-                   data = ufo, radius = 5, 
-                   stroke = FALSE, fillOpacity = 0.5, 
-                   popup = ufo_popup
-                   )
+```{r}
+#Filter out Alaska and error water points. 
+bigfoottrim2 <- bigfoot %>%
+  filter(state != "Alaska") %>%
+  filter(number != "38287") %>%
+  filter(number != "36759") %>%
+  filter(number != "17240") 
+  
+#Trim more
+bigfoottrim3 <- bigfoottrim2 %>%
+  dplyr::select(latitude, longitude) %>%
+  rename(lat = latitude, long = longitude) %>%
+  relocate(long, lat) %>%
+  drop_na()
+
 ```
 
+```{r}
+visual <- ggplot(data = bigfoottrim3,
+mapping = aes(x = long, y = lat)) +
+geom_point() +
+ggtitle('Thicc Foot') +
+theme_wsj()
+
+visual
+```
+
+```{r}
+mypattern <- ppp(bigfoottrim3[,1], bigfoottrim3[,2], c(-161.75583, -68.01197), c(19.50139, 64.85694))
+k <- Kest(mypattern)
+plot(k)
+```
+
+```{r}
+
+
+```
