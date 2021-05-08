@@ -10,7 +10,7 @@ knitr::opts_chunk$set(echo = TRUE)
 ```
 
 ```{r}
-pacman::p_load(tidyverse, leaflet, RColorBrewer, ggthemes, spatstat, raster)
+pacman::p_load(tidyverse, leaflet, RColorBrewer, ggthemes, spatstat, raster, maptools)
 ```
 
 ```{r}
@@ -47,16 +47,35 @@ visual
 ```
 
 ```{r}
-mypattern <- ppp(bigfoottrim3[,1], bigfoottrim3[,2], c(-135, -68.01197), c(19.50139, 55))
+mypattern <- ppp(bigfoottrim3[,1], bigfoottrim3[,2], c(-135, -66), c(23, 50))
 k <- Kest(mypattern)
 plot(k)
 ```
 
 ```{r}
 r <- raster(ncol = 20, nrow = 20,
-            xmn = -135, xmx = -68.01197,
-            ymn = 19.50139, ymx = 55)
+            xmn = -135, xmx = -66,
+            ymn = 23, ymx = 50)
 
 raster <- rasterize(bigfoottrim3, r, fun = "count")
 plot(raster)
+```
+
+```{r}
+us <- raster::getData('GADM', country = 'USA', level= 0 ) #Get the County Shapefile for the US
+us_crop <- raster::crop(us, extent(-135, -66, 23, 50))
+plot(us_crop)
+```
+
+```{r}
+proj4string(us_crop) <- ""
+usowin <- as.owin(us_crop)
+
+p <- ppp(bigfoottrim3[,1], bigfoottrim3[,2], window = usowin)
+plot(p)
+```
+
+```{r}
+ds <- density(p)
+plot(ds, main = "Bigfoot Sightings")
 ```
